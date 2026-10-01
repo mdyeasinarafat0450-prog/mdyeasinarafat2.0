@@ -31,5 +31,13 @@ pnpm-debug.log*
 # Vercel
 .vercel
 
+# Database
+# SQLite dev database contains the hashed admin credentials - never commit it.
+prisma/*.db
+prisma/*.db-journal
+prisma/*.db-wal
+prisma/*.db-shm
+*.db
+
 # TypeScript
 *.tsbuildinfo

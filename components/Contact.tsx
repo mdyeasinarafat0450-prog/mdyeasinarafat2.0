@@ -16,7 +16,7 @@ import {
   Copy,
   Check,
 } from "lucide-react";
-import { contactConfig } from "@/config/contact";
+import { useContent } from "@/lib/use-content";
 import MagneticButton from "./ui/MagneticButton";
 
 const projectTypes = [
@@ -38,6 +38,8 @@ const budgetRanges = [
 ];
 
 export default function Contact() {
+  const { data, loading } = useContent();
+  const contact = data.contact;
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -78,27 +80,44 @@ export default function Contact() {
 
     setIsSubmitting(true);
 
-    // Simulate clean submission handling without misleading backend claims
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitSuccess(true);
     }, 700);
   };
 
-  // Pre-filled fallback mailto URL for immediate sending
   const getPreFilledMailto = () => {
     const subject = encodeURIComponent(
       `Project Inquiry: ${formData.projectType} from ${formData.name || "Client"}`
     );
     const body = encodeURIComponent(
-      `Hi Yeasin,\n\nName: ${formData.name}\nEmail: ${formData.email}\nProject Type: ${formData.projectType}\nBudget Range: ${formData.budget}\n\nProject Details:\n${formData.message}\n\nSent from your portfolio website.`
+      `Hi ${contact?.name || "Yeasin"},\n\nName: ${formData.name}\nEmail: ${formData.email}\nProject Type: ${formData.projectType}\nBudget Range: ${formData.budget}\n\nProject Details:\n${formData.message}\n\nSent from your portfolio website.`
     );
-    const targetEmail =
-      contactConfig.email && !contactConfig.email.includes("[INSERT")
-        ? contactConfig.email
-        : "contact@example.com";
+    const targetEmail = contact?.email || "contact@example.com";
     return `mailto:${targetEmail}?subject=${subject}&body=${body}`;
   };
+
+  if (loading || !contact) {
+    return (
+      <section id="contact" className="py-24 sm:py-32 relative overflow-hidden bg-cinema-dark/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col items-start mb-16">
+            <div className="w-24 h-6 bg-white/[0.04] rounded-full mb-4 animate-pulse" />
+            <div className="w-64 h-10 bg-white/[0.04] rounded-xl mb-2 animate-pulse" />
+            <div className="w-96 h-4 bg-white/[0.04] rounded animate-pulse" />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+            <div className="lg:col-span-5">
+              <div className="w-full h-96 bg-white/[0.04] rounded-2xl animate-pulse" />
+            </div>
+            <div className="lg:col-span-7">
+              <div className="w-full h-96 bg-white/[0.04] rounded-2xl animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="contact" className="py-24 sm:py-32 relative overflow-hidden bg-cinema-dark/80">
@@ -114,10 +133,10 @@ export default function Contact() {
           </div>
 
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight">
-            Let&apos;s Create Something Great.
+            {contact.heading as string}
           </h2>
           <p className="text-base sm:text-lg text-zinc-400 mt-2 max-w-2xl">
-            Have a project in mind? Let&apos;s turn your idea into something people want to watch.
+            {contact.description as string}
           </p>
         </div>
 
@@ -144,13 +163,13 @@ export default function Contact() {
                         EMAIL
                       </p>
                       <p className="text-sm font-semibold text-white truncate">
-                        {contactConfig.email}
+                        {contact.email as string}
                       </p>
                     </div>
                   </div>
 
                   <button
-                    onClick={() => handleCopy(contactConfig.email, "email")}
+                    onClick={() => handleCopy(contact.email as string, "email")}
                     className="p-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-zinc-400 hover:text-white transition-colors shrink-0 interactive"
                     title="Copy Email"
                   >
@@ -173,13 +192,13 @@ export default function Contact() {
                         PHONE / MOBILE
                       </p>
                       <p className="text-sm font-semibold text-white truncate">
-                        {contactConfig.phone}
+                        {contact.phone as string}
                       </p>
                     </div>
                   </div>
 
                   <button
-                    onClick={() => handleCopy(contactConfig.phone, "phone")}
+                    onClick={() => handleCopy(contact.phone as string, "phone")}
                     className="p-2 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-zinc-400 hover:text-white transition-colors shrink-0 interactive"
                     title="Copy Phone"
                   >
@@ -201,13 +220,13 @@ export default function Contact() {
                       LOCATION & TIMEZONE
                     </p>
                     <p className="text-sm font-semibold text-white">
-                      {contactConfig.location} • {contactConfig.timezone}
+                      {contact.location as string} • {contact.timezone as string}
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Requirement 14 Contact Action Buttons */}
+              {/* Contact Action Buttons */}
               <div className="space-y-2.5">
                 <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider block mb-2">
                   Quick Connect Actions
@@ -215,7 +234,7 @@ export default function Contact() {
 
                 <div className="grid grid-cols-2 gap-2.5">
                   <a
-                    href={contactConfig.getEmailHref()}
+                    href={`mailto:${contact.email}`}
                     className="p-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-cinema-border text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all interactive"
                   >
                     <Mail className="w-4 h-4 text-cinema-accent" />
@@ -223,7 +242,7 @@ export default function Contact() {
                   </a>
 
                   <a
-                    href={contactConfig.getPhoneHref()}
+                    href={`tel:${(contact.phone as string)?.replace(/\s+/g, "")}`}
                     className="p-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] border border-cinema-border text-white text-xs font-semibold flex items-center justify-center gap-2 transition-all interactive"
                   >
                     <Phone className="w-4 h-4 text-cinema-amber" />
@@ -231,7 +250,7 @@ export default function Contact() {
                   </a>
 
                   <a
-                    href={contactConfig.getWhatsAppHref()}
+                    href={`https://wa.me/${(contact.whatsapp as string)?.replace(/[^\d+]/g, "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-semibold flex items-center justify-center gap-2 transition-all interactive"
@@ -251,15 +270,14 @@ export default function Contact() {
               </div>
             </div>
 
-            {/* Centralized config note */}
+            {/* Response Guarantee */}
             <div className="p-4 rounded-xl bg-cinema-panel/40 border border-cinema-border text-xs text-zinc-400">
               <p className="flex items-center gap-1.5 font-mono text-zinc-300 mb-1">
                 <Clock className="w-3.5 h-3.5 text-cinema-accent" />
                 Response Guarantee
               </p>
               <p>
-                Inquiries are typically reviewed within 24 hours. All contact credentials are
-                customizable in <code className="text-white">/config/contact.ts</code>.
+                Inquiries are typically reviewed within 24 hours.
               </p>
             </div>
           </div>
@@ -395,7 +413,7 @@ export default function Contact() {
                 </button>
               </form>
 
-              {/* Requirement 24 Modal / Banner for Form Submission */}
+              {/* Modal / Banner for Form Submission */}
               <AnimatePresence>
                 {submitSuccess && (
                   <motion.div
@@ -420,7 +438,7 @@ export default function Contact() {
                         <span>Ready For Direct Dispatch:</span>
                       </div>
                       <p>
-                        To transmit this inquiry directly to Md Yeasin Arafat right now, you can open
+                        To transmit this inquiry directly right now, you can open
                         your email client with all your filled details:
                       </p>
                       <a

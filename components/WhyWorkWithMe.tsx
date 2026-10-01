@@ -2,11 +2,39 @@
 
 import { motion } from "framer-motion";
 import { ShieldCheck, HeartHandshake, Zap, Target, Sliders, CheckCircle } from "lucide-react";
-import { whyWorkWithMeData } from "@/data/whyWorkWithMe";
+import { useContent } from "@/lib/use-content";
 
-const reasonIcons = [Zap, ShieldCheck, HeartHandshake, Target, Sliders];
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  Zap,
+  ShieldCheck,
+  HeartHandshake,
+  Target,
+  Sliders,
+};
 
 export default function WhyWorkWithMe() {
+  const { data, loading } = useContent();
+  const items = data.whyItems;
+
+  if (loading) {
+    return (
+      <section id="why-me" className="py-24 sm:py-32 relative overflow-hidden bg-cinema-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col items-center text-center mb-16">
+            <div className="w-24 h-6 bg-white/[0.04] rounded-full mb-4 animate-pulse" />
+            <div className="w-64 h-10 bg-white/[0.04] rounded-xl mb-2 animate-pulse" />
+            <div className="w-96 h-4 bg-white/[0.04] rounded animate-pulse" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="w-full h-48 bg-white/[0.04] rounded-2xl animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="why-me" className="py-24 sm:py-32 relative overflow-hidden bg-cinema-black">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -28,11 +56,11 @@ export default function WhyWorkWithMe() {
 
         {/* 5 Reasons Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {whyWorkWithMeData.map((item, index) => {
-            const Icon = reasonIcons[index % reasonIcons.length];
+          {items.map((item: Record<string, unknown>, index: number) => {
+            const Icon = iconMap[item.icon as string] || Zap;
             return (
               <motion.div
-                key={item.id}
+                key={item.id as string}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -45,7 +73,7 @@ export default function WhyWorkWithMe() {
                   {/* Top Bar with Number & Icon */}
                   <div className="flex items-center justify-between mb-6">
                     <span className="font-mono text-2xl font-black text-white/10 group-hover:text-cinema-accent/30 transition-colors">
-                      {item.number}
+                      {item.number as string}
                     </span>
                     <div className="w-10 h-10 rounded-xl bg-surface-100 border border-cinema-border flex items-center justify-center text-cinema-accent group-hover:scale-105 group-hover:bg-cinema-accent group-hover:text-white transition-all shadow-sm">
                       <Icon className="w-5 h-5" />
@@ -54,12 +82,16 @@ export default function WhyWorkWithMe() {
 
                   {/* Title & Highlight */}
                   <h3 className="text-lg font-bold text-white mb-1.5 group-hover:text-cinema-accent transition-colors">
-                    {item.title}
+                    {item.title as string}
                   </h3>
-                  <p className="text-xs font-mono text-cinema-amber mb-3">{item.highlight}</p>
+                  <p className="text-xs font-mono text-cinema-amber mb-3">
+                    {item.highlight as string}
+                  </p>
 
                   {/* Description */}
-                  <p className="text-sm text-zinc-300 leading-relaxed">{item.description}</p>
+                  <p className="text-sm text-zinc-300 leading-relaxed">
+                    {item.description as string}
+                  </p>
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-white/[0.04] flex items-center gap-2 text-[11px] font-mono text-zinc-500">

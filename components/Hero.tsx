@@ -4,15 +4,42 @@ import { motion } from "framer-motion";
 import { Play, ArrowRight, Sparkles, Scissors, Layers, Volume2, Film } from "lucide-react";
 import RecBadge from "./ui/RecBadge";
 import MagneticButton from "./ui/MagneticButton";
+import { useContent } from "@/lib/use-content";
 
 export default function Hero() {
+  const { data, loading } = useContent();
+  const hero = data.hero;
+
+  if (loading || !hero) {
+    return (
+      <section id="hero" className="relative min-h-[92vh] sm:min-h-screen flex items-center justify-center pt-24 pb-16 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            <div className="lg:col-span-7 flex flex-col items-start">
+              <div className="mb-6 w-64 h-8 bg-white/[0.04] rounded-full animate-pulse" />
+              <div className="w-full h-16 bg-white/[0.04] rounded-xl mb-6 animate-pulse" />
+              <div className="w-3/4 h-6 bg-white/[0.04] rounded-lg mb-8 animate-pulse" />
+              <div className="flex gap-4 mb-10">
+                <div className="w-32 h-12 bg-white/[0.04] rounded-xl animate-pulse" />
+                <div className="w-40 h-12 bg-white/[0.04] rounded-xl animate-pulse" />
+              </div>
+            </div>
+            <div className="lg:col-span-5">
+              <div className="w-full aspect-[16/10] bg-white/[0.04] rounded-2xl animate-pulse" />
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section
       id="hero"
       className="relative min-h-[92vh] sm:min-h-screen flex items-center justify-center pt-24 pb-16 overflow-hidden timeline-grid"
     >
       {/* Ambient background glows */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 w-96 h-96 bg-cinema-accent/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/4 left:1/4 -translate-x-1/2 w-96 h-96 bg-cinema-accent/10 rounded-full blur-[140px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-[28rem] h-[28rem] bg-cinema-amber/5 rounded-full blur-[160px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
@@ -26,48 +53,36 @@ export default function Hero() {
           >
             {/* Live REC Status Badge */}
             <div className="mb-6">
-              <RecBadge label="Available for Freelance Projects" showTimecode={true} />
+              <RecBadge label={hero.badgeText as string} showTimecode={true} />
             </div>
 
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.08] mb-6">
-              Turning Ideas Into{" "}
-              <span className="relative inline-block text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-100 to-zinc-400">
-                Visual Stories.
-                <motion.span
-                  className="absolute left-0 bottom-1 w-full h-[3px] bg-gradient-to-r from-cinema-accent via-cinema-amber to-transparent rounded-full"
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: 1 }}
-                  transition={{ delay: 0.6, duration: 0.9, ease: "easeOut" }}
-                  style={{ transformOrigin: "left" }}
-                />
-              </span>
+              {hero.title as string}
             </h1>
 
             {/* Supporting Text */}
             <p className="text-base sm:text-lg md:text-xl text-zinc-300 leading-relaxed max-w-2xl mb-8 font-normal">
-              I&apos;m <span className="text-white font-semibold">Md Yeasin Arafat</span> — a video
-              editor and motion graphics enthusiast focused on creating engaging, modern and
-              visually compelling content.
+              {hero.description as string}
             </p>
 
             {/* CTAs */}
             <div className="flex flex-wrap items-center gap-4 mb-10">
               <MagneticButton
-                href="#work"
+                href={hero.ctaUrl as string}
                 variant="primary"
                 className="gap-2.5 px-7 py-3.5 text-sm sm:text-base font-semibold"
               >
                 <Play className="w-4 h-4 fill-white" />
-                <span>View My Work</span>
+                <span>{hero.ctaText as string}</span>
               </MagneticButton>
 
               <MagneticButton
-                href="#contact"
+                href={hero.secondaryCtaUrl as string}
                 variant="secondary"
                 className="gap-2 px-6 py-3.5 text-sm sm:text-base font-medium"
               >
-                <span>Let&apos;s Work Together</span>
+                <span>{hero.secondaryCtaText as string}</span>
                 <ArrowRight className="w-4 h-4 text-zinc-400 group-hover:translate-x-0.5 transition-transform" />
               </MagneticButton>
             </div>
@@ -76,21 +91,27 @@ export default function Hero() {
             <div className="pt-6 border-t border-cinema-border w-full grid grid-cols-3 gap-4 max-w-md">
               <div>
                 <span className="block font-mono text-[11px] text-zinc-500 uppercase tracking-widest">
-                  Focus
+                  {hero.stat1Label as string}
                 </span>
-                <span className="font-medium text-xs sm:text-sm text-zinc-200">Story & Pacing</span>
+                <span className="font-medium text-xs sm:text-sm text-zinc-200">
+                  {hero.stat1Value as string}
+                </span>
               </div>
               <div>
                 <span className="block font-mono text-[11px] text-zinc-500 uppercase tracking-widest">
-                  Formats
+                  {hero.stat2Label as string}
                 </span>
-                <span className="font-medium text-xs sm:text-sm text-zinc-200">16:9 & 9:16</span>
+                <span className="font-medium text-xs sm:text-sm text-zinc-200">
+                  {hero.stat2Value as string}
+                </span>
               </div>
               <div>
                 <span className="block font-mono text-[11px] text-zinc-500 uppercase tracking-widest">
-                  Aesthetic
+                  {hero.stat3Label as string}
                 </span>
-                <span className="font-medium text-xs sm:text-sm text-zinc-200">Cinematic Dark</span>
+                <span className="font-medium text-xs sm:text-sm text-zinc-200">
+                  {hero.stat3Value as string}
+                </span>
               </div>
             </div>
           </motion.div>
@@ -120,7 +141,7 @@ export default function Hero() {
               {/* Video Monitor Area */}
               <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-cinema-black border border-white/[0.04]">
                 <img
-                  src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?q=80&w=1000&auto=format&fit=crop"
+                  src={hero.heroImage as string}
                   alt="Cinematic Editing Preview"
                   className="w-full h-full object-cover opacity-85 transition-transform duration-700 group-hover:scale-105 filter contrast-125"
                 />

@@ -2,19 +2,44 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Film, Filter, Sparkles, FolderGit2 } from "lucide-react";
-import { projectsData, projectCategories, ProjectItem } from "@/data/projects";
+import { Film, FolderGit2 } from "lucide-react";
+import { useContent } from "@/lib/use-content";
 import ProjectCard from "./ProjectCard";
 import ProjectDetailModal from "./ProjectDetailModal";
 
 export default function Portfolio() {
+  const { data, loading } = useContent();
+  const projects = data.projects;
   const [activeCategory, setActiveCategory] = useState<string>("All");
-  const [selectedProject, setSelectedProject] = useState<ProjectItem | null>(null);
+  const [selectedProject, setSelectedProject] = useState<Record<string, unknown> | null>(null);
+
+  const categories = ["All", ...Array.from(new Set(projects.map((p: Record<string, unknown>) => p.category as string)))];
 
   const filteredProjects =
     activeCategory === "All"
-      ? projectsData
-      : projectsData.filter((item) => item.category === activeCategory);
+      ? projects
+      : projects.filter((item: Record<string, unknown>) => item.category === activeCategory);
+
+  if (loading) {
+    return (
+      <section id="work" className="py-24 sm:py-32 relative overflow-hidden bg-cinema-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+            <div>
+              <div className="w-24 h-6 bg-white/[0.04] rounded-full mb-4 animate-pulse" />
+              <div className="w-64 h-10 bg-white/[0.04] rounded-xl mb-2 animate-pulse" />
+              <div className="w-96 h-4 bg-white/[0.04] rounded animate-pulse" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="w-full h-64 bg-white/[0.04] rounded-2xl animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="work" className="py-24 sm:py-32 relative overflow-hidden bg-cinema-black">
@@ -40,7 +65,7 @@ export default function Portfolio() {
 
           {/* Category Filter Pills */}
           <div className="flex flex-wrap gap-1.5 p-1.5 rounded-2xl bg-cinema-panel/70 border border-cinema-border backdrop-blur-md">
-            {projectCategories.map((cat) => (
+            {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
@@ -59,9 +84,9 @@ export default function Portfolio() {
         {/* Project Grid */}
         <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <AnimatePresence>
-            {filteredProjects.map((project) => (
+            {filteredProjects.map((project: Record<string, unknown>) => (
               <ProjectCard
-                key={project.id}
+                key={project.id as string}
                 project={project}
                 onSelect={(proj) => setSelectedProject(proj)}
               />
@@ -79,8 +104,7 @@ export default function Portfolio() {
         {/* Bottom Editing Helper Tip */}
         <div className="mt-12 text-center">
           <p className="text-xs font-mono text-zinc-500">
-            SHOWCASING {filteredProjects.length} OF {projectsData.length} PROJECTS • EASY 1-FILE
-            CUSTOMIZATION IN <span className="text-zinc-300">/data/projects.ts</span>
+            SHOWCASING {filteredProjects.length} OF {projects.length} PROJECTS
           </p>
         </div>
       </div>

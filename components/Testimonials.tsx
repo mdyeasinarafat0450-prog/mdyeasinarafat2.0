@@ -1,10 +1,32 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { MessageSquareQuote, Info, Sparkles, UserCheck } from "lucide-react";
-import { testimonialsData } from "@/data/testimonials";
+import { MessageSquareQuote, Info, UserCheck } from "lucide-react";
+import { useContent } from "@/lib/use-content";
 
 export default function Testimonials() {
+  const { data, loading } = useContent();
+  const testimonials = data.testimonials;
+
+  if (loading) {
+    return (
+      <section id="testimonials" className="py-24 sm:py-32 relative overflow-hidden bg-cinema-dark/60">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col items-center text-center mb-16">
+            <div className="w-24 h-6 bg-white/[0.04] rounded-full mb-4 animate-pulse" />
+            <div className="w-64 h-10 bg-white/[0.04] rounded-xl mb-2 animate-pulse" />
+            <div className="w-96 h-4 bg-white/[0.04] rounded animate-pulse" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="w-full h-48 bg-white/[0.04] rounded-2xl animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="testimonials" className="py-24 sm:py-32 relative overflow-hidden bg-cinema-dark/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -31,20 +53,16 @@ export default function Testimonials() {
             <span className="font-semibold text-white">Genuine Collaboration Policy: </span>
             <span>
               Real client quotes and channel reviews will be showcased below as client feedback is
-              received. To add your feedback or update this section, edit{" "}
-              <code className="bg-black/50 px-1.5 py-0.5 rounded font-mono text-zinc-200">
-                /data/testimonials.ts
-              </code>
-              .
+              received.
             </span>
           </div>
         </div>
 
         {/* Testimonials Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {testimonialsData.map((item, index) => (
+          {testimonials.map((item: Record<string, unknown>, index: number) => (
             <motion.div
-              key={item.id}
+              key={item.id as string}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -65,7 +83,7 @@ export default function Testimonials() {
 
                 {/* Quote Text */}
                 <p className="text-zinc-300 text-sm leading-relaxed italic mb-6">
-                  &ldquo;{item.quote}&rdquo;
+                  &ldquo;{item.quote as string}&rdquo;
                 </p>
               </div>
 
@@ -75,8 +93,12 @@ export default function Testimonials() {
                   <UserCheck className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-white">{item.clientName}</p>
-                  <p className="text-[11px] text-zinc-500 font-mono">{item.clientRole}</p>
+                  <p className="text-xs font-semibold text-white">
+                    {item.clientName as string}
+                  </p>
+                  <p className="text-[11px] text-zinc-500 font-mono">
+                    {item.clientRole as string}
+                  </p>
                 </div>
               </div>
             </motion.div>

@@ -3,11 +3,10 @@
 import { useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Play, Clock, Calendar, CheckCircle2, ArrowUpRight, Film, Info } from "lucide-react";
-import { ProjectItem } from "@/data/projects";
 import MagneticButton from "./ui/MagneticButton";
 
 interface ProjectDetailModalProps {
-  project: ProjectItem | null;
+  project: Record<string, unknown> | null;
   onClose: () => void;
 }
 
@@ -31,21 +30,22 @@ export default function ProjectDetailModal({ project, onClose }: ProjectDetailMo
 
   // Helper to construct YouTube embed if needed
   const getEmbedUrl = () => {
-    if (project.embedUrl) return project.embedUrl;
+    if (project.embedUrl) return project.embedUrl as string;
     if (project.videoUrl) {
-      if (project.videoUrl.includes("embed")) return project.videoUrl;
-      const ytMatch = project.videoUrl.match(
+      if ((project.videoUrl as string).includes("embed")) return project.videoUrl as string;
+      const ytMatch = (project.videoUrl as string).match(
         /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/
       );
       if (ytMatch && ytMatch[1]) {
         return `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0`;
       }
-      return project.videoUrl;
+      return project.videoUrl as string;
     }
     return null;
   };
 
   const embedUrl = getEmbedUrl();
+  const tools = project.tools as Array<Record<string, unknown>> || [];
 
   return (
     <AnimatePresence>
@@ -71,7 +71,7 @@ export default function ProjectDetailModal({ project, onClose }: ProjectDetailMo
           <div className="flex items-center justify-between px-6 py-4 border-b border-cinema-border bg-cinema-black/60">
             <div className="flex items-center gap-3">
               <span className="px-2.5 py-1 rounded-full bg-cinema-accent/15 border border-cinema-accent/30 text-cinema-accent text-xs font-mono font-semibold">
-                {project.category}
+                {project.category as string}
               </span>
               <span className="text-zinc-500 font-mono text-xs hidden sm:inline-block">
                 PROJECT CASE STUDY
@@ -90,17 +90,12 @@ export default function ProjectDetailModal({ project, onClose }: ProjectDetailMo
           {/* Modal Scrollable Body */}
           <div className="overflow-y-auto p-6 sm:p-8 space-y-8">
             {/* Template Notice Banner if placeholder */}
-            {project.isPlaceholder && (
+            {!!project.isPlaceholder && (
               <div className="flex items-start gap-3 p-3.5 rounded-xl bg-cinema-amber/10 border border-cinema-amber/30 text-amber-200 text-xs">
                 <Info className="w-4 h-4 shrink-0 text-cinema-amber mt-0.5" />
                 <p>
                   <strong>Sample Portfolio Entry:</strong> This project is a formatted showcase
                   demonstrating how your client edits, YouTube links, and case studies will display.
-                  Easily replace with your real video and description in{" "}
-                  <code className="text-white bg-black/40 px-1 py-0.5 rounded font-mono">
-                    /data/projects.ts
-                  </code>
-                  .
                 </p>
               </div>
             )}
@@ -110,7 +105,7 @@ export default function ProjectDetailModal({ project, onClose }: ProjectDetailMo
               {embedUrl ? (
                 <iframe
                   src={embedUrl}
-                  title={project.title}
+                  title={project.title as string}
                   className="w-full h-full border-0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
@@ -118,16 +113,16 @@ export default function ProjectDetailModal({ project, onClose }: ProjectDetailMo
               ) : (
                 <div className="relative w-full h-full">
                   <img
-                    src={project.thumbnail}
-                    alt={project.title}
+                    src={project.thumbnail as string}
+                    alt={project.title as string}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center p-6 text-center">
                     <div className="w-16 h-16 rounded-full bg-cinema-accent/90 text-white flex items-center justify-center shadow-lg mb-3">
                       <Play className="w-7 h-7 fill-white ml-1" />
                     </div>
-                    <p className="text-white font-semibold text-lg">{project.title}</p>
-                    <p className="text-zinc-400 text-xs mt-1">Video embed ready in projects.ts</p>
+                    <p className="text-white font-semibold text-lg">{project.title as string}</p>
+                    <p className="text-zinc-400 text-xs mt-1">Video embed ready</p>
                   </div>
                 </div>
               )}
@@ -136,39 +131,43 @@ export default function ProjectDetailModal({ project, onClose }: ProjectDetailMo
             {/* Project Title & Metadata Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-cinema-border">
               <div>
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-white">{project.title}</h3>
-                <p className="text-zinc-400 text-sm mt-1">{project.shortDescription}</p>
+                <h3 className="text-2xl sm:text-3xl font-extrabold text-white">
+                  {project.title as string}
+                </h3>
+                <p className="text-zinc-400 text-sm mt-1">
+                  {project.shortDescription as string}
+                </p>
               </div>
 
               <div className="flex items-center gap-4 text-xs font-mono text-zinc-400 shrink-0">
-                {project.duration && (
+                {!!project.duration && (
                   <div className="flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5 text-cinema-accent" />
-                    <span>{project.duration}</span>
+                    <span>{project.duration as string}</span>
                   </div>
                 )}
-                {project.year && (
+                {!!project.year && (
                   <div className="flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5 text-cinema-amber" />
-                    <span>{project.year}</span>
+                    <span>{project.year as string}</span>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Tools / Focus Tags */}
-            {project.tools && project.tools.length > 0 && (
+            {tools.length > 0 && (
               <div>
                 <h4 className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-2.5">
                   Techniques & Execution Focus
                 </h4>
                 <div className="flex flex-wrap gap-2">
-                  {project.tools.map((tool) => (
+                  {tools.map((tool) => (
                     <span
-                      key={tool}
+                      key={tool.id as string}
                       className="px-3 py-1 rounded-lg bg-surface-100 border border-cinema-border text-xs font-medium text-zinc-200"
                     >
-                      {tool}
+                      {tool.name as string}
                     </span>
                   ))}
                 </div>
@@ -178,46 +177,52 @@ export default function ProjectDetailModal({ project, onClose }: ProjectDetailMo
             {/* Structured Case Study Sections */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Client Brief */}
-              {project.clientBrief && (
+              {!!project.clientBrief && (
                 <div className="p-5 rounded-xl bg-surface-200/50 border border-cinema-border">
                   <h4 className="text-xs font-mono text-cinema-amber uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <Film className="w-3.5 h-3.5" />
                     <span>The Objective / Brief</span>
                   </h4>
-                  <p className="text-sm text-zinc-300 leading-relaxed">{project.clientBrief}</p>
+                  <p className="text-sm text-zinc-300 leading-relaxed">
+                    {project.clientBrief as string}
+                  </p>
                 </div>
               )}
 
               {/* My Role */}
-              {project.myRole && (
+              {!!project.myRole && (
                 <div className="p-5 rounded-xl bg-surface-200/50 border border-cinema-border">
                   <h4 className="text-xs font-mono text-cinema-accent uppercase tracking-wider mb-2 flex items-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>My Role & Responsibilities</span>
                   </h4>
-                  <p className="text-sm text-zinc-300 leading-relaxed">{project.myRole}</p>
+                  <p className="text-sm text-zinc-300 leading-relaxed">
+                    {project.myRole as string}
+                  </p>
                 </div>
               )}
 
               {/* Creative Approach */}
-              {project.creativeApproach && (
+              {!!project.creativeApproach && (
                 <div className="p-5 rounded-xl bg-surface-200/50 border border-cinema-border">
                   <h4 className="text-xs font-mono text-cinema-accent uppercase tracking-wider mb-2">
                     Creative & Pacing Approach
                   </h4>
                   <p className="text-sm text-zinc-300 leading-relaxed">
-                    {project.creativeApproach}
+                    {project.creativeApproach as string}
                   </p>
                 </div>
               )}
 
               {/* Final Result */}
-              {project.finalResult && (
+              {!!project.finalResult && (
                 <div className="p-5 rounded-xl bg-surface-200/50 border border-cinema-border">
                   <h4 className="text-xs font-mono text-emerald-400 uppercase tracking-wider mb-2">
                     Final Result & Impact
                   </h4>
-                  <p className="text-sm text-zinc-300 leading-relaxed">{project.finalResult}</p>
+                  <p className="text-sm text-zinc-300 leading-relaxed">
+                    {project.finalResult as string}
+                  </p>
                 </div>
               )}
             </div>

@@ -11,18 +11,42 @@ import {
   ArrowRight,
   Briefcase,
 } from "lucide-react";
-import { servicesData, ServiceItem } from "@/data/services";
+import { useContent } from "@/lib/use-content";
 import MagneticButton from "./ui/MagneticButton";
 
-const iconMap = {
-  Video: Video,
-  Sparkles: Sparkles,
-  Palette: Palette,
-  PlaySquare: PlaySquare,
-  Smartphone: Smartphone,
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+  Video,
+  Sparkles,
+  Palette,
+  PlaySquare,
+  Smartphone,
 };
 
 export default function Services() {
+  const { data, loading } = useContent();
+  const services = data.services;
+
+  if (loading) {
+    return (
+      <section id="services" className="py-24 sm:py-32 relative overflow-hidden bg-cinema-dark/40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+            <div>
+              <div className="w-24 h-6 bg-white/[0.04] rounded-full mb-4 animate-pulse" />
+              <div className="w-64 h-10 bg-white/[0.04] rounded-xl mb-2 animate-pulse" />
+              <div className="w-96 h-4 bg-white/[0.04] rounded animate-pulse" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="w-full h-80 bg-white/[0.04] rounded-2xl animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="services" className="py-24 sm:py-32 relative overflow-hidden bg-cinema-dark/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -54,11 +78,12 @@ export default function Services() {
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {servicesData.map((service, index) => {
-            const IconComponent = iconMap[service.iconName];
+          {services.map((service: Record<string, unknown>, index: number) => {
+            const IconComponent = iconMap[service.iconName as string] || Video;
+            const deliverables = service.deliverables as Array<Record<string, unknown>> || [];
             return (
               <motion.div
-                key={service.id}
+                key={service.id as string}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -78,21 +103,21 @@ export default function Services() {
                     </div>
 
                     <span className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.06]">
-                      {service.aspectRatio}
+                      {service.aspectRatio as string}
                     </span>
                   </div>
 
                   {/* Title & Tagline */}
                   <h3 className="text-xl font-bold text-white mb-1.5 group-hover:text-cinema-accent transition-colors">
-                    {service.title}
+                    {service.title as string}
                   </h3>
                   <p className="text-xs font-mono text-cinema-amber mb-4">
-                    {service.tagline}
+                    {service.tagline as string}
                   </p>
 
                   {/* Short Description */}
                   <p className="text-sm text-zinc-300 leading-relaxed mb-6">
-                    {service.description}
+                    {service.description as string}
                   </p>
 
                   {/* Deliverables List */}
@@ -100,10 +125,10 @@ export default function Services() {
                     <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider block mb-2">
                       Key Deliverables
                     </span>
-                    {service.deliverables.map((item, dIdx) => (
-                      <div key={dIdx} className="flex items-start gap-2 text-xs text-zinc-400">
+                    {deliverables.map((item: Record<string, unknown>) => (
+                      <div key={item.id as string} className="flex items-start gap-2 text-xs text-zinc-400">
                         <CheckCircle2 className="w-3.5 h-3.5 text-cinema-accent shrink-0 mt-0.5" />
-                        <span>{item}</span>
+                        <span>{item.text as string}</span>
                       </div>
                     ))}
                   </div>

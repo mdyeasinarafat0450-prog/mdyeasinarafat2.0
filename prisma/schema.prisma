@@ -1,0 +1,345 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SiteSettings {
+  id              String  @id @default(cuid())
+  siteTitle       String  @default("My Portfolio")
+  siteDescription String  @default("")
+  logoText        String  @default("MYA")
+  logoImage       String?
+  favicon         String?
+  primaryColor    String  @default("#FF334B")
+  secondaryColor  String  @default("#FF9F1C")
+  accentColor     String  @default("#00F0FF")
+  contactEmail    String  @default("")
+  copyright       String  @default("© 2026 My Portfolio. All rights reserved.")
+  maintenanceMode Boolean @default(false)
+  defaultImage    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model NavItem {
+  id        String  @id @default(cuid())
+  name      String
+  url       String
+  order     Int     @default(0)
+  visible   Boolean @default(true)
+  isCta     Boolean @default(false)
+  ctaText   String?
+  ctaUrl    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Hero {
+  id                String  @id @default(cuid())
+  badgeText         String  @default("Available for Freelance Projects")
+  title             String  @default("Turning Ideas Into Visual Stories")
+  subtitle          String  @default("")
+  description       String  @default("")
+  ctaText           String  @default("View My Work")
+  ctaUrl            String  @default("#work")
+  secondaryCtaText  String  @default("Let's Work Together")
+  secondaryCtaUrl   String  @default("#contact")
+  heroImage         String?
+  heroVideo         String?
+  stat1Label        String  @default("Focus")
+  stat1Value        String  @default("Story & Pacing")
+  stat2Label        String  @default("Formats")
+  stat2Value        String  @default("16:9 & 9:16")
+  stat3Label        String  @default("Aesthetic")
+  stat3Value        String  @default("Cinematic Dark")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model About {
+  id          String  @id @default(cuid())
+  title       String  @default("Behind The Edit")
+  description String  @default("")
+  shortBio    String  @default("")
+  longBio     String  @default("")
+  profileImage String?
+  experience  String  @default("")
+  education   String  @default("")
+  ctaText     String  @default("Get in touch")
+  ctaUrl      String  @default("#contact")
+  statusText  String  @default("Open to Serious Collaborations")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  pillars     AboutPillar[]
+}
+
+model AboutPillar {
+  id          String @id @default(cuid())
+  aboutId     String
+  about       About  @relation(fields: [aboutId], references: [id], onDelete: Cascade)
+  icon        String @default("Lightbulb")
+  title       String
+  subtitle    String @default("")
+  description String @default("")
+  order       Int    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Service {
+  id          String  @id @default(cuid())
+  title       String
+  iconName    String  @default("Video")
+  tagline     String  @default("")
+  description String  @default("")
+  image       String?
+  buttonText  String?
+  buttonUrl   String?
+  featured    Boolean @default(false)
+  visible     Boolean @default(true)
+  order       Int     @default(0)
+  aspectRatio String  @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  deliverables ServiceDeliverable[]
+}
+
+model ServiceDeliverable {
+  id       String @id @default(cuid())
+  serviceId String
+  service  Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  text     String
+  order    Int    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Skill {
+  id              String  @id @default(cuid())
+  name            String
+  category        String  @default("Core Editing")
+  shortDescription String @default("")
+  badge           String  @default("")
+  icon            String?
+  level           Int     @default(80)
+  visible         Boolean @default(true)
+  order           Int     @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  highlights SkillHighlight[]
+}
+
+model SkillHighlight {
+  id       String @id @default(cuid())
+  skillId  String
+  skill    Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  text     String
+  order    Int    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id                String  @id @default(cuid())
+  title             String
+  category          String  @default("Video Editing")
+  shortDescription  String  @default("")
+  thumbnail         String?
+  videoUrl          String?
+  embedUrl          String?
+  videoType         String  @default("youtube")
+  duration          String?
+  aspectRatio       String  @default("16:9")
+  year              String?
+  featured          Boolean @default(false)
+  visible           Boolean @default(true)
+  clientName        String?
+  projectDate       String?
+  projectUrl        String?
+  clientBrief       String?
+  myRole            String?
+  creativeApproach  String?
+  finalResult       String?
+  isPlaceholder     Boolean @default(false)
+  order             Int     @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tools     ProjectTool[]
+  images    ProjectImage[]
+  tags      ProjectTag[]
+}
+
+model ProjectTool {
+  id        String @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name      String
+  order     Int    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProjectImage {
+  id        String @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  url       String
+  order     Int    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProjectTag {
+  id        String @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Testimonial {
+  id          String  @id @default(cuid())
+  clientName  String
+  clientRole  String  @default("")
+  projectType String  @default("")
+  quote       String  @default("")
+  rating      Int     @default(5)
+  clientImage String?
+  visible     Boolean @default(true)
+  isPlaceholder Boolean @default(false)
+  order       Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SocialLink {
+  id        String  @id @default(cuid())
+  name      String
+  url       String  @default("")
+  handle    String  @default("")
+  iconName  String  @default("Globe")
+  visible   Boolean @default(true)
+  order     Int     @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Contact {
+  id          String  @id @default(cuid())
+  heading     String  @default("Let's Create Something Great.")
+  description String  @default("")
+  ctaText     String  @default("Send Inquiry")
+  email       String  @default("")
+  phone       String  @default("")
+  whatsapp    String  @default("")
+  location    String  @default("")
+  timezone    String  @default("")
+  name        String  @default("")
+  role        String  @default("")
+  status      String  @default("")
+  turnaround  String  @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Footer {
+  id          String  @id @default(cuid())
+  description String  @default("")
+  copyright   String  @default("© 2026 My Portfolio. All rights reserved.")
+  logoText    String  @default("MYA")
+  logoImage   String?
+  tagline     String  @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  links       FooterLink[]
+}
+
+model FooterLink {
+  id       String @id @default(cuid())
+  footerId String
+  footer   Footer @relation(fields: [footerId], references: [id], onDelete: Cascade)
+  name     String
+  url      String
+  order    Int    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Media {
+  id        String  @id @default(cuid())
+  filename  String
+  url       String
+  mimeType  String  @default("image/jpeg")
+  size      Int     @default(0)
+  alt       String  @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SEO {
+  id                String  @id @default(cuid())
+  metaTitle         String  @default("")
+  metaDescription   String  @default("")
+  keywords          String  @default("")
+  ogTitle           String  @default("")
+  ogDescription     String  @default("")
+  ogImage           String?
+  canonicalUrl      String  @default("")
+  favicon           String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model WhyWorkItem {
+  id          String  @id @default(cuid())
+  number      String  @default("01")
+  title       String
+  description String  @default("")
+  highlight   String  @default("")
+  icon        String  @default("Zap")
+  order       Int     @default(0)
+  visible     Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model MarqueeItem {
+  id        String  @id @default(cuid())
+  text      String
+  order     Int     @default(0)
+  visible   Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CTA {
+  id          String  @id @default(cuid())
+  badgeText   String  @default("HAVE AN IDEA?")
+  title       String  @default("Let's Turn It Into A Video.")
+  description String  @default("")
+  buttonText  String  @default("Start A Project")
+  buttonUrl   String  @default("#contact")
+  noteText    String  @default("Currently booking freelance projects for this month")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
