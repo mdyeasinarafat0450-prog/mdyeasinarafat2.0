@@ -1,24 +1,95 @@
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+
+/**
+ * Minimal .env loader.
+ *
+ * The seed script runs through `tsx` (see the "db:seed" script), and unlike
+ * `next build` / `next dev`, tsx does not populate process.env from `.env`.
+ * Without this the required variables below would always look missing.
+ *
+ * Real environment variables (CI, Vercel, your shell) always win.
+ */
+function loadEnvFile() {
+  const envPath = resolve(process.cwd(), ".env");
+  if (!existsSync(envPath)) return;
+
+  for (const rawLine of readFileSync(envPath, "utf8").split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+
+    const separator = line.indexOf("=");
+    if (separator === -1) continue;
+
+    const key = line.slice(0, separator).trim();
+    let value = line.slice(separator + 1).trim();
+
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+
+    if (!(key in process.env)) process.env[key] = value;
+  }
+}
+
+loadEnvFile();
+
+const BCRYPT_ROUNDS = 12;
+const MIN_PASSWORD_LENGTH = 12;
+
+/**
+ * Reads a required variable or aborts with an actionable message.
+ * Never logs the value of a secret.
+ */
+function requireEnv(name: string): string {
+  const value = process.env[name]?.trim();
+
+  if (!value) {
+    throw new Error(
+      `Missing required environment variable ${name}.\n` +
+        `Add it to your .env file (copy .env.example) or set it in your host's dashboard.`
+    );
+  }
+
+  return value;
+}
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("Seeding database...");
 
-  // Create admin user
-  const hashedPassword = await bcrypt.hash("admin123", 12);
+  // Credentials come from the environment - nothing secret lives in this repo.
+  const adminEmail = requireEnv("ADMIN_EMAIL").toLowerCase();
+  const adminPassword = requireEnv("ADMIN_PASSWORD");
+
+  if (adminPassword.length < MIN_PASSWORD_LENGTH) {
+    throw new Error(
+      `ADMIN_PASSWORD must be at least ${MIN_PASSWORD_LENGTH} characters long.`
+    );
+  }
+
+  // Never stored in plaintext - only the bcrypt hash is written.
+  const hashedPassword = await bcrypt.hash(adminPassword, BCRYPT_ROUNDS);
+
   const admin = await prisma.user.upsert({
-    where: { email: "admin@portfolio.com" },
+    where: { email: adminEmail },
+    // Left untouched on purpose: re-seeding must not silently reset the
+    // password of an existing admin account.
     update: {},
     create: {
-      email: "admin@portfolio.com",
+      email: adminEmail,
       password: hashedPassword,
       name: "Admin",
       role: "admin",
     },
   });
-  console.log("Admin user created:", admin.email);
+  console.log("Admin user ready:", admin.email);
 
   // Site Settings
   await prisma.siteSettings.upsert({
@@ -688,7 +759,9 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error(e);
+    // Print just the message for expected config errors so the output stays
+    // readable, and never echo any secret value.
+    console.error(e instanceof Error ? e.message : e);
     process.exit(1);
   })
   .finally(async () => {
