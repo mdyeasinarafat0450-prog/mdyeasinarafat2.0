@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// Must stay dynamic. If this route were statically prerendered, the JSON would
+// be frozen at build time and CMS edits made in the admin panel would not appear
+// on the front-end until the next deploy. It also lets the build run without a
+// live database connection.
+export const dynamic = "force-dynamic";
+
 // GET all public content for the frontend
 export async function GET() {
   try {

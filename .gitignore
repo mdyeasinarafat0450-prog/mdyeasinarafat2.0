@@ -37,7 +37,13 @@ prisma/*.db
 prisma/*.db-journal
 prisma/*.db-wal
 prisma/*.db-shm
+prisma/*.db.backup*
+prisma/*.sqlitedb
 *.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.db.backup*
 
 # TypeScript
 *.tsbuildinfo

@@ -3,8 +3,14 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"
+
+  // Pooled connection used at runtime (serverless / Vercel friendly).
+  url = env("DATABASE_URL")
+
+  // Direct (non-pooled) connection, required for schema migrations because
+  // the transaction pooler cannot run DDL reliably.
+  directUrl = env("DIRECT_URL")
 }
 
 model User {

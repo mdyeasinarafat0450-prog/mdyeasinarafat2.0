@@ -3,17 +3,18 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "./prisma";
 
-// A fallback secret would let anyone forge a valid session, so it is only
-// tolerated while developing locally.
-if (!process.env.JWT_SECRET && process.env.NODE_ENV === "production") {
-  throw new Error(
-    "JWT_SECRET is not set. Refusing to sign sessions with a fallback key."
-  );
+function getJwtSecret(): Uint8Array {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "JWT_SECRET is not set. Refusing to sign sessions with a fallback key."
+      );
+    }
+    return new TextEncoder().encode("fallback-secret-key");
+  }
+  return new TextEncoder().encode(secret);
 }
-
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "fallback-secret-key"
-);
 
 const COOKIE_NAME = "admin_session";
 const SESSION_DURATION = 60 * 60 * 24 * 7; // 7 days in seconds
@@ -39,7 +40,7 @@ export async function createSession(
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(`${SESSION_DURATION}s`)
-    .sign(JWT_SECRET);
+    .sign(getJwtSecret());
 
   cookies().set(COOKIE_NAME, token, {
     httpOnly: true,
@@ -54,7 +55,7 @@ export async function createSession(
 
 export async function verifySession(token: string) {
   try {
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const { payload } = await jwtVerify(token, getJwtSecret());
     return payload as { userId: string };
   } catch {
     return null;
