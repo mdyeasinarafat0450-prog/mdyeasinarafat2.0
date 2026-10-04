@@ -90,9 +90,10 @@ export async function GET() {
       marqueeItems,
       cta,
     });
-  } catch (error) {
+  } catch (error: any) {
+    console.error("API Fetch Error:", error);
     return NextResponse.json(
-      { error: "Failed to fetch content" },
+      { error: "Failed to fetch content", details: error?.message || String(error) },
       { status: 500 }
     );
   }
