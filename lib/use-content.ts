@@ -42,7 +42,7 @@ export function useContent() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/content")
+    fetch("/api/content", { cache: "no-store" })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch content");
         return res.json();

@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 // be frozen at build time and CMS edits made in the admin panel would not appear
 // on the front-end until the next deploy. It also lets the build run without a
 // live database connection.
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 // GET all public content for the frontend
 export async function GET() {
