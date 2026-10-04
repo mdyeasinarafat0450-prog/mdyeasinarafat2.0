@@ -10,29 +10,18 @@ export const dynamic = "force-dynamic";
 // GET all public content for the frontend
 export async function GET() {
   try {
-    const [
-      settings,
-      navItems,
-      hero,
-      about,
-      services,
-      skills,
-      projects,
-      testimonials,
-      socials,
-      contact,
-      footer,
-      seo,
-      whyItems,
-      marqueeItems,
-      cta,
-    ] = await Promise.all([
+    // Batch 1
+    const [settings, navItems, hero, about] = await Promise.all([
       prisma.siteSettings.findFirst(),
       prisma.navItem.findMany({ orderBy: { order: "asc" } }),
       prisma.hero.findFirst(),
       prisma.about.findFirst({
         include: { pillars: { orderBy: { order: "asc" } } },
       }),
+    ]);
+
+    // Batch 2
+    const [services, skills, projects, testimonials] = await Promise.all([
       prisma.service.findMany({
         where: { visible: true },
         include: { deliverables: { orderBy: { order: "asc" } } },
@@ -56,6 +45,10 @@ export async function GET() {
         where: { visible: true },
         orderBy: { order: "asc" },
       }),
+    ]);
+
+    // Batch 3
+    const [socials, contact, footer, seo] = await Promise.all([
       prisma.socialLink.findMany({
         where: { visible: true },
         orderBy: { order: "asc" },
@@ -65,6 +58,10 @@ export async function GET() {
         include: { links: { orderBy: { order: "asc" } } },
       }),
       prisma.sEO.findFirst(),
+    ]);
+
+    // Batch 4
+    const [whyItems, marqueeItems, cta] = await Promise.all([
       prisma.whyWorkItem.findMany({
         where: { visible: true },
         orderBy: { order: "asc" },
