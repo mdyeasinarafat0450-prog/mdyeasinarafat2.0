@@ -40,7 +40,7 @@ function loadEnvFile() {
 loadEnvFile();
 
 const BCRYPT_ROUNDS = 12;
-const MIN_PASSWORD_LENGTH = 12;
+const MIN_PASSWORD_LENGTH = 8;
 
 /**
  * Reads a required variable or aborts with an actionable message.
